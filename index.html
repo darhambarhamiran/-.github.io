@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پخش کننده ویدیو</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f7f7f7;
+  }
+  video {
+    max-width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  #videoContainer {
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div id="videoContainer">
+  <input type="text" id="videoUrl" placeholder="لینک دانلود مستقیم فیلم را وارد کنید">
+  <button onclick="loadVideo()">پخش ویدیو</button>
+  <video id="videoPlayer" controls style="display:none;">
+    <source src="" type="video/mp4">
+    مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+  </video>
+</div>
+
+<script>
+  // تابع برای ایجاد یک شناسه یکتا برای هر لینک ویدیو
+  function generateVideoId(url) {
+    var hash = 0, i, chr;
+    if (url.length === 0) return hash;
+    for (i = 0; i < url.length; i++) {
+      chr   = url.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // تبدیل به یک عدد صحیح 32 بیتی
+    }
+    return hash;
+  }
+
+  // تابع برای ذخیره‌سازی موقعیت زمانی ویدیو
+  function saveVideoPosition(id, position) {
+    localStorage.setItem(id, position);
+  }
+
+  // تابع برای بازیابی موقعیت زمانی ویدیو
+  function loadVideoPosition(id, callback) {
+    var position = localStorage.getItem(id);
+    callback(position);
+  }
+
+  // تابع برای بارگذاری ویدیو
+  function loadVideo() {
+    var videoUrl = document.getElementById('videoUrl').value;
+    var videoPlayer = document.getElementById('videoPlayer');
+    var source = videoPlayer.querySelector('source');
+    source.src = videoUrl;
+    videoPlayer.load();
+    videoPlayer.style.display = 'block';
+
+    var videoId = generateVideoId(videoUrl);
+    loadVideoPosition(videoId, function(position) {
+      if (position) {
+        videoPlayer.currentTime = position;
+      }
+    });
+
+    // ذخیره‌سازی موقعیت زمانی ویدیو هنگام تغییر
+    videoPlayer.addEventListener('timeupdate', function() {
+      saveVideoPosition(videoId, videoPlayer.currentTime);
+    });
+  }
+</script>
+
+</body>
+</html>
